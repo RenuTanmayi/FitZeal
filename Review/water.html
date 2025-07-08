@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Intake Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js for graph -->
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f6f4f4, #faf6f7); /* Soft pastel pink and light purple gradient */
+      color: #f6f2f2;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .tracker-container {
+      margin-bottom: 30px;
+      background-color: rgb(252, 195, 219);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Glass shape without outline */
+    .glass {
+      position: relative;
+      width: 120px;
+      height: 200px;
+      background-color: #ffffff; /* Light grey/white */
+      border-top: none;
+      clip-path: polygon(0% 0%, 100% 0%, 80% 100%, 20% 100%); /* Tapered glass shape */
+      margin: 20px auto;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .glass:hover {
+      transform: scale(1.05);
+    }
+
+    /* Water inside the glass */
+    .water {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 0;
+      background: linear-gradient(to top, rgba(161, 215, 250, 0.8), rgba(69, 171, 239, 0.5));
+      transition: height 0.3s ease-out;
+      clip-path: inherit;
+    }
+
+    /* Glass count and button styling */
+    .count {
+      font-size: 2em;
+      font-weight: bold;
+      color: #fff;
+      margin-top: 10px;
+    }
+
+    .button-container {
+      margin-top: 15px;
+    }
+
+    .button {
+      padding: 12px 30px;
+      font-size: 1.1em;
+      cursor: pointer;
+      border: none;
+      background-color: #9b59b6; /* Lighter purple for the button */
+      color: white;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #8e44ad;
+      transform: translateY(-2px);
+    }
+
+    /* Card style for Analysis and Recommendations */
+    .analysis, .recommendations {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: none; /* Hide initially */
+    }
+
+    /* Enhance text visibility */
+    .analysis {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #2ecc71; /* Green for positive feedback */
+    }
+
+    .recommendations {
+      font-size: 1.2em;
+      color: #e1e1e1;
+      background-color: rgba(52, 152, 219, 0.5); /* Soft blue background */
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #3498db;
+      margin-top: 10px;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .recommendations p {
+      margin: 0;
+    }
+
+    .recommendations .icon {
+      font-size: 2em;
+      margin-right: 10px;
+    }
+
+    /* Graph Container */
+    .graph-container {
+      width: 80%;
+      max-width: 600px;
+      margin-top: 40px;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      display: none; /* Hide initially */
+    }
+
+    canvas {
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="tracker-container">
+    <div class="glass" id="glass">
+      <div class="water" id="water"></div>
+    </div>
+    <div class="count" id="count">0 Glasses</div>
+    <div class="button-container">
+      <button class="button" onclick="addGlass()">Add a Glass</button>
+    </div>
+    <div class="button-container">
+      <button class="button" onclick="measureIntake()">Measure</button>
+    </div>
+  </div>
+
+  <!-- Analysis and Recommendations -->
+  <div class="analysis" id="analysis"></div>
+  <div class="recommendations" id="recommendations"></div>
+
+  <!-- Graph to display past 7 days of water intake -->
+  <div class="graph-container" id="graph-container">
+    <canvas id="waterGraph"></canvas>
+  </div>
+
+  <script>
+    let glassCount = 0;
+    const dailyWaterIntakes = JSON.parse(localStorage.getItem("dailyWaterIntakes")) || []; // Load data from localStorage
+
+    // Initialize the page with any stored data for the graph
+    window.onload = function() {
+      document.getElementById("count").textContent = glassCount + " Glasses"; // Reset count to 0
+      updateGraph(); // Load the graph
+    };
+
+    function addGlass() {
+      const glassHeight = 200;
+      const maxGlasses = 10;
+      const waterElement = document.getElementById("water");
+      const countElement = document.getElementById("count");
+
+      if (glassCount < maxGlasses) {
+        glassCount++;
+        const waterHeight = (glassHeight / maxGlasses) * glassCount;
+        waterElement.style.height = waterHeight + "px";
+        countElement.textContent = glassCount + (glassCount === 1 ? " Glass" : " Glasses");
+      } else {
+        alert("You've reached the daily goal!");
+      }
+    }
+
+    function measureIntake() {
+      // Show the analysis and recommendations sections
+      document.getElementById("analysis").style.display = "block";
+      document.getElementById("recommendations").style.display = "block";
+      document.getElementById("graph-container").style.display = "block"; // Show graph
+
+      // Analyze the intake and provide recommendations
+      const analysisElement = document.getElementById("analysis");
+      const recommendationsElement = document.getElementById("recommendations");
+
+      let analysisText = "";
+      let recommendationsText = "";
+      let icon = "";
+
+      if (glassCount < 4) {
+        analysisText = "Your water intake is below the recommended level.";
+        recommendationsText = "Try to drink more water throughout the day to stay hydrated.";
+        icon = "❗";
+      } else if (glassCount >= 4 && glassCount <= 6) {
+        analysisText = "Your water intake is on track!";
+        recommendationsText = "Keep up the good work and maintain your hydration level.";
+        icon = "💧";
+      } else {
+        analysisText = "Great job! You've exceeded the daily water intake goal!";
+        recommendationsText = "Maintain this healthy habit and keep yourself hydrated.";
+        icon = "🎉";
+      }
+
+      analysisElement.textContent = analysisText;
+      recommendationsElement.innerHTML = `<span class="icon">${icon}</span>${recommendationsText}`;
+
+      // Store the glass count for the day in the daily intake array (for 7-day tracking)
+      if (dailyWaterIntakes.length >= 7) {
+        dailyWaterIntakes.shift(); // Remove the oldest data point to maintain 7 days of records
+      }
+      dailyWaterIntakes.push(glassCount);
+
+      // Save to localStorage after each measurement
+      saveData();
+
+      // Update the graph with the past 7 days' data
+      updateGraph();
+    }
+
+    function saveData() {
+      localStorage.setItem("dailyWaterIntakes", JSON.stringify(dailyWaterIntakes));
+    }
+
+    function updateGraph() {
+      const ctx = document.getElementById('waterGraph').getContext('2d');
+      const graphData = {
+        labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        datasets: [{
+          label: 'Water Intake (Glasses)',
+          data: dailyWaterIntakes,
+          backgroundColor: 'rgba(52, 152, 219, 0.6)',
+          borderColor: 'rgba(52, 152, 219, 1)',
+          borderWidth: 1,
+        }]
+      };
+
+      if (window.waterChart) {
+        window.waterChart.destroy(); // Destroy previous chart instance
+      }
+
+      window.waterChart = new Chart(ctx, {
+        type: 'bar',
+        data: graphData,
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 10 // Max value of glasses
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false,
+        }
+      });
+      
+    }
+  </script>
+</body>
+</html>

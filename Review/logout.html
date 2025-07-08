@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout - FitZeal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Consistent Styling to Match Home Page */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .navbar {
+            background-color: #b31166;
+        }
+        .navbar .navbar-brand,
+        .navbar .nav-link {
+            color: white !important;
+        }
+        .navbar-brand {
+            font-family: "Lucida Handwriting", cursive;
+            font-size: 2em;
+        }
+        .navbar .nav-link:hover,
+        .navbar .nav-link.active {
+            color: #F7D1E9 !important;
+        }
+        .navbar .btn-outline-success {
+            color: #E6A8D7;
+        }
+        .navbar .btn-outline-success:hover {
+            background-color: #E6A8D7;
+            color: white;
+        }
+        
+        .logout-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        .logout-container h2 {
+            text-align: center;
+            color: #b31166;
+        }
+        .logout-container p {
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+        }
+        .logout-container .btn-logout {
+            display: block;
+            width: 100%;
+            background-color: #b31166;
+            color: white;
+            font-size: 18px;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .logout-container .btn-logout:hover {
+            background-color: #77346a;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">FitZeal</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <!-- Additional links can be added here -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Logout Confirmation -->
+    <div class="logout-container">
+        <h2>Logout</h2>
+        <p>Are you sure you want to log out?</p>
+        <form action="./login%20page.html" method="GET">
+            <button type="submit" class="btn-logout">Logout</button>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2024 FitZeal. All rights reserved.</p>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

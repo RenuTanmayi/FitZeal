@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meal Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f4a6c1, #b31166);
+      color: #fff;
+      flex-direction: column;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .meal-selection {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 30px;
+      margin-top: 50px;
+    }
+
+    .meal-question {
+      font-size: 2em;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .meal-option {
+      margin: 0 20px;
+      text-align: center;
+    }
+
+    .meal-option img {
+      width: 300px;
+      height: 300px;
+      border-radius: 10px;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .meal-option img:hover {
+      transform: scale(1.1);
+    }
+
+    .meal-option span {
+      display: block;
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+
+    .quantity-container {
+      margin-top: 20px;
+      font-size: 2em;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .quantity-button {
+      font-size: 2em;
+      padding: 10px;
+      cursor: pointer;
+      background: #602e60;
+      color: white;
+      border-radius: 5px;
+      border: none;
+      transition: background 0.3s ease;
+    }
+
+    .quantity-button:hover {
+      background: #743469;
+    }
+
+    .quantity-display {
+      font-size: 3em;
+      font-weight: bold;
+      transition: all 0.3s ease-in-out;
+      display: inline-block;
+    }
+
+    .button-container {
+      margin-top: 20px;
+    }
+
+    .button {
+      padding: 12px 30px;
+      font-size: 1.1em;
+      cursor: pointer;
+      border: none;
+      background-color: #602e60;
+      color: white;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .button:hover {
+      background-color: #743469;
+      transform: translateY(-2px);
+    }
+
+    .calories {
+      margin-top: 20px;
+      font-size: 1.5em;
+    }
+
+    .recommendations {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #4a2856;
+    }
+
+    #calculateButton {
+      margin: 0 auto;
+      display: block;
+    }
+
+    .exercise-button-container {
+      margin-top: 20px;
+    }
+
+    .exercise-button {
+      padding: 12px 30px;
+      font-size: 1.1em;
+      cursor: pointer;
+      border: none;
+      background-color: #602e60;
+      color: white;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .exercise-button:hover {
+      background-color: #743469;
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>What did you have just now?</h1>
+    <div class="meal-selection">
+      <div class="meal-option" onclick="selectMeal('breakfast')">
+        <img src="./breakfast.jpg" alt="Breakfast">
+        <span><b>Breakfast</b></span>
+      </div>
+      <div class="meal-option" onclick="selectMeal('lunch')">
+        <img src="./lunch.jpeg" alt="Lunch">
+        <span><b>Lunch</b></span>
+      </div>
+      <div class="meal-option" onclick="selectMeal('dinner')">
+        <img src="./dinner.jpeg" alt="Dinner">
+        <span><b>Dinner</b></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="foodSelection" style="display:none;">
+    <input type="text" id="foodItem" class="meal-input" placeholder="Enter Food Item" />
+    <div class="button-container">
+      <button class="button" onclick="askFoodQuestion()">Next</button>
+    </div>
+    <div id="quantitySection" style="display:none;">
+      <div class="meal-question" id="questionText"></div>
+      <div class="quantity-container">
+        <button onclick="changeQuantity(-1)" class="quantity-button">&#8595;</button>
+        <span id="quantityDisplay" class="quantity-display">0</span>
+        <button onclick="changeQuantity(1)" class="quantity-button">&#8593;</button>
+      </div>
+    </div>
+    <div class="button-container">
+      <button class="button" onclick="calculateCalories()" style="display:none;" id="calculateButton">Calculate Calories</button>
+    </div>
+    <div class="calories" id="calories"></div>
+  </div>
+
+  <div class="recommendations" id="recommendations" style="display:none;"></div>
+
+  <div class="exercise-button-container" id="exerciseButtonContainer" style="display:none;">
+    <button class="exercise-button" onclick="goToExercisePage()">Go to Exercise Page</button>
+  </div>
+
+  <script>
+    const predefinedFoods = ['idli', 'vada', 'poori', 'dosa', 'paratha', 'peserattu'];
+    const foodCalories = {
+      idli: 61,
+      vada: 125,
+      poori: 141,
+      dosa: 104,
+      paratha: 290,
+      peserattu: 110
+    };
+
+    let foodItem = '';
+    let foodQuantity = 0;
+    let foodType = '';
+    let isPredefinedFood = false;
+
+    function selectMeal(meal) {
+      foodType = meal;
+      document.querySelector('.meal-selection').style.display = 'none';
+      document.getElementById('foodSelection').style.display = 'block';
+    }
+    window.selectMeal = selectMeal;
+
+    function askFoodQuestion() {
+      foodItem = document.getElementById('foodItem').value.trim().toLowerCase();
+      if (!foodItem) {
+        alert('Please enter a food item.');
+        return;
+      }
+
+      if (predefinedFoods.includes(foodItem)) {
+        isPredefinedFood = true;
+        document.getElementById('questionText').textContent = 'How many of them did you eat?';
+      } else {
+        isPredefinedFood = false;
+        document.getElementById('questionText').textContent = 'How many grams did you eat approximately?';
+        fetchFoodCalories(foodItem);
+      }
+
+      document.getElementById('quantitySection').style.display = 'block';
+    }
+
+    function fetchFoodCalories(foodName) {
+      const foodData = fetch(`http://localhost:5000/get-food-calories?food=${foodName}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.calories_per_100g) {
+            window.foodCaloriesPer100g = data.calories_per_100g;
+          } else {
+            alert('Food not found in the database.');
+            window.foodCaloriesPer100g = 0;
+          }
+        })
+        .catch(err => alert('Error fetching data.'));
+    }
+
+    function changeQuantity(amount) {
+      foodQuantity += isPredefinedFood ? amount : amount * 50;
+      if (foodQuantity < 0) foodQuantity = 0;
+      document.getElementById('quantityDisplay').textContent = foodQuantity;
+      document.getElementById('calculateButton').style.display = foodQuantity > 0 ? 'block' : 'none';
+    }
+
+    function calculateCalories() {
+      let calories = 0;
+
+      if (isPredefinedFood) {
+        calories = foodCalories[foodItem] * foodQuantity;
+      } else {
+        calories = (foodQuantity / 100) * window.foodCaloriesPer100g;
+      }
+
+      document.getElementById('calories').textContent = `You consumed ${calories} calories.`;
+
+      const recommendations = calories < 200
+        ? 'You can go for a light workout!'
+        : calories < 400
+        ? 'Try a moderate workout!'
+        : 'Time for an intense workout!';
+
+      document.getElementById('recommendations').innerHTML = recommendations;
+      document.getElementById('recommendations').style.display = 'block';
+
+      document.getElementById('exerciseButtonContainer').style.display = 'block';
+    }
+
+    function goToExercisePage() {
+      window.location.href = 'exercise.html';
+    }
+  </script>
+</body>
+</html>

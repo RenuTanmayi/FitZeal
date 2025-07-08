@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleep Tracker</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            text-align: center;
+            padding: 50px 0;
+        }
+        .header {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #6a4caf;
+            margin-bottom: 30px;
+        }
+        .sleep-input {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            position: relative;
+        }
+        .circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid #ddd;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .fill {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #6a4caf; /* Light purple */
+            border-radius: 50%;
+            clip-path: polygon(50% 50%, 100% 50%, 100% 100%, 50% 100%, 0% 100%, 0% 50%);
+            transform-origin: center;
+            transform: rotate(0deg); /* Initially no fill */
+            transition: all 0.5s ease;
+        }
+        .circle span {
+            font-size: 1.4em;
+            color: black; /* Black text for visibility */
+        }
+        .suggestions {
+            margin-top: 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .graph-container {
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 200px;
+            width: 80%;
+            margin: 30px auto;
+        }
+        .chart-bar {
+            width: 50px;
+            height: 0;
+            background-color: #6a4caf;
+            margin: 0 5px;
+            text-align: center;
+            color: white;
+            transition: height 0.5s ease;
+        }
+        .chart-bar span {
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">How Many Hours Did You Sleep?</div>
+
+    <!-- Interactive sleep input with a circle -->
+    <div class="sleep-input">
+        <div class="circle" id="sleep-circle">
+            <div class="fill" id="fill"></div>
+            <span id="sleep-hours">0 hrs</span>
+        </div>
+    </div>
+
+    <!-- Suggestions based on sleep -->
+    <div id="suggestions" class="suggestions"></div>
+
+    <!-- Graph to display sleep data -->
+    <div class="graph-container" id="sleep-graph"></div>
+    
+    <button onclick="saveSleepData()">Save Sleep Data</button>
+</div>
+
+<script>
+    let sleepData = []; // Start with an empty array for sleep data
+
+    // Sleep data input logic
+    const sleepCircle = document.getElementById('sleep-circle');
+    const fill = document.getElementById('fill');
+    const sleepHoursText = document.getElementById('sleep-hours');
+    const suggestionsText = document.getElementById('suggestions');
+
+    let currentSleep = 0; // Start with 0 hours of sleep
+
+    // Update the fill percentage and text based on hours of sleep
+    function updateSleepInput(hours) {
+        const percentage = (hours / 12) * 100;
+        const rotation = (percentage / 100) * 360; // Convert percentage to degrees (0 to 360)
+        fill.style.transform = `rotate(${rotation}deg)`; // Start from 12 o'clock (0deg) and fill clockwise
+        sleepHoursText.textContent = `${hours} hrs`;
+        updateSuggestions(hours);
+    }
+
+    // Update suggestions based on hours slept
+    function updateSuggestions(hours) {
+        if (hours >= 7 && hours <= 9) {
+            suggestionsText.textContent = "Hurray! You're on track for a productive day!";
+            suggestionsText.style.color = "green";
+        } else if (hours < 7) {
+            suggestionsText.textContent = "You could use a bit more sleep for better focus!";
+            suggestionsText.style.color = "orange";
+        } else if (hours > 9) {
+            suggestionsText.textContent = "Too much sleep can make you feel sluggish. Try to keep it balanced!";
+            suggestionsText.style.color = "red";
+        }
+    }
+
+    // Add event listener to update the sleep input
+    sleepCircle.addEventListener('click', function () {
+        currentSleep = currentSleep === 12 ? 0 : currentSleep + 1;
+        updateSleepInput(currentSleep);
+    });
+
+    // Save sleep data and update graph
+    function saveSleepData() {
+        sleepData.push(currentSleep); // Add new sleep data to array
+        if (sleepData.length > 7) sleepData.shift(); // Keep only the last 7 days
+        drawSleepGraph();
+    }
+
+    // Draw the sleep graph (bar chart)
+    function drawSleepGraph() {
+        const sleepGraph = document.getElementById('sleep-graph');
+        sleepGraph.innerHTML = ''; // Clear previous graph
+
+        sleepData.forEach((hours, index) => {
+            const bar = document.createElement('div');
+            bar.classList.add('chart-bar');
+            bar.style.height = `${(hours / 12) * 100}%`;
+            bar.innerHTML = `<span>${hours} hrs</span>`;
+            sleepGraph.appendChild(bar);
+        });
+    }
+
+    // Initialize the sleep input and graph
+    updateSleepInput(currentSleep);
+    drawSleepGraph();
+</script>
+
+</body>
+</html>

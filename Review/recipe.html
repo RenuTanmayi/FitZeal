@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitzeal Recipe Finder</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+
+    .container {
+      width: 80%;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem;
+      background-color: #b31166;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+    }
+
+    section {
+      margin: 2rem 0;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    ul {
+      list-style-type: none;
+    }
+
+    li {
+      background-color: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #b31166;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background-color:#77346a;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 1rem;
+      width: 80%;
+      margin-bottom: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Fitzeal Recipe Finder</h1>
+    </header>
+
+    <section class="ingredient-input">
+      <h2>Enter Ingredients You Have</h2>
+      <input type="text" id="ingredient-input" placeholder="Enter ingredients separated by commas (e.g. tomato, rice)">
+      <button id="find-recipes-btn">Find Recipes</button>
+    </section>
+
+    <section class="recipes" id="recipes-section" style="display:none;">
+      <h2>Matching Recipes</h2>
+      <ul id="recipe-list"></ul>
+    </section>
+
+    <section class="recipe-details" id="recipe-details" style="display:none;">
+      <h2>Ingredients for Recipe</h2>
+      <ul id="ingredients-list"></ul>
+      <button id="back-btn">Back to Recipes</button>
+    </section>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:5000'; // Backend URL
+    const recipeList = document.getElementById('recipe-list');
+    const recipesSection = document.getElementById('recipes-section');
+    const recipeDetailsSection = document.getElementById('recipe-details');
+    const ingredientsList = document.getElementById('ingredients-list');
+    const backBtn = document.getElementById('back-btn');
+    const findRecipesBtn = document.getElementById('find-recipes-btn');
+    const ingredientInput = document.getElementById('ingredient-input');
+  
+    // Event listener for Find Recipes button
+    findRecipesBtn.addEventListener('click', () => {
+      const ingredients = ingredientInput.value.split(',').map(ingredient => ingredient.trim().toLowerCase());
+      if (ingredients.length > 0) {
+        fetchRecipesByIngredients(ingredients);
+      }
+    });
+  
+    // Function to fetch recipes by ingredients
+    async function fetchRecipesByIngredients(ingredients) {
+      try {
+        const response = await fetch(`${API_URL}/recipes/search`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ingredients })
+        });
+  
+        const recipes = await response.json();
+        if (Array.isArray(recipes) && recipes.length > 0) {
+          recipeList.innerHTML = '';
+          recipes.forEach((recipe) => {
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+              <strong>${recipe.recipe_name}</strong><br>
+              <em>${recipe.instructions || 'No instructions available'}</em>
+            `;
+            // When the recipe is clicked, go to the ingredient details page
+            listItem.addEventListener('click', () => {
+              fetchIngredients(recipe.id);
+              recipesSection.style.display = 'none'; // Hide recipes section
+              recipeDetailsSection.style.display = 'block'; // Show ingredients section
+            });
+            recipeList.appendChild(listItem);
+          });
+          recipesSection.style.display = 'block'; // Show recipes section
+        } else {
+          recipeList.innerHTML = '<li>No recipes found matching the ingredients.</li>';
+          recipesSection.style.display = 'block'; // Show no recipe message
+        }
+      } catch (error) {
+        console.error('Error fetching recipes:', error);
+        recipeList.innerHTML = '<li>Error fetching recipes. Please try again later.</li>';
+        recipesSection.style.display = 'block';
+      }
+    }
+  
+    // Function to fetch ingredients for a specific recipe
+    async function fetchIngredients(recipeId) {
+      try {
+        const response = await fetch(`${API_URL}/recipes/${recipeId}/ingredients`);
+        const ingredients = await response.json();
+        
+        if (Array.isArray(ingredients) && ingredients.length > 0) {
+          ingredientsList.innerHTML = '';
+          ingredients.forEach((ingredient) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = ingredient.ingredient_name;
+            ingredientsList.appendChild(listItem);
+          });
+        } else {
+          ingredientsList.innerHTML = '<li>No ingredients found for this recipe.</li>';
+        }
+      } catch (error) {
+        console.error('Error fetching ingredients:', error);
+        ingredientsList.innerHTML = '<li>Error fetching ingredients. Please try again later.</li>';
+      }
+    }
+  
+    // Function to go back to the recipes list
+    backBtn.addEventListener('click', () => {
+      recipeDetailsSection.style.display = 'none'; // Hide ingredients section
+      recipesSection.style.display = 'block'; // Show recipes section
+    });
+  
+  </script>
+  
+</body>
+</html>
