@@ -1,0 +1,38 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+form{
+    width: 500px;
+    margin:10% auto auto;
+    background-color: rgb(252, 249, 251);
+    padding: 50px;
+    padding-top: 30px;
+    
+}
+
+h1{
+
+    padding-top: 10px;
+    padding-bottom: 20px;
+    
+}
+label{
+    font-size: 1.3rem;
+}
+body{
+
+    background-image: url(https://cdn1.vectorstock.com/i/1000x1000/59/95/cute-fitness-icons-over-beige-background-vector-2125995.jpg);
+    background-repeat: repeat;
+}
+input{
+    padding-left: 3px;
+}
+div{
+    padding-bottom: 12px;
+}
+button{
+    padding: 3px;
+}
